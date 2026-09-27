@@ -1,0 +1,82 @@
+[project]
+name = "knowledge-saas"
+version = "0.1.0"
+description = "A modular-monolith AI knowledge SaaS API"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "Knowledge SaaS" }]
+dependencies = [
+  "alembic>=1.14.1",
+  "anthropic>=0.39.0",
+  "asyncpg>=0.30.0",
+  "boto3>=1.35.0",
+  "fastapi>=0.115.0",
+  "httpx>=0.27.2",
+  "numpy>=2.1.0",
+  "openai>=1.54.0",
+  "prometheus-client>=0.21.0",
+  "pydantic>=2.9.0",
+  "pydantic-settings>=2.6.0",
+  "PyJWT[crypto]>=2.9.0",
+  "python-multipart>=0.0.12",
+  "redis>=5.2.0",
+  "sqlalchemy[asyncio]>=2.0.36",
+  "aiosqlite>=0.20.0",
+  "uvicorn[standard]>=0.32.0",
+]
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.2.3"]
+
+[dependency-groups]
+dev = [
+  "hypothesis>=6.115.0",
+  "pyright>=1.1.390",
+  "pytest>=8.3.3",
+  "pytest-asyncio>=0.24.0",
+  "pytest-cov>=6.0.0",
+  "ruff>=0.8.0",
+]
+
+[project.scripts]
+knowledge-api = "knowledge_api.main:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+default-groups = ["dev"]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/knowledge_api"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC"]
+ignore = ["B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = [".venv", "build"]
+typeCheckingMode = "basic"
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
+reportMissingImports = false
+reportMissingTypeStubs = false

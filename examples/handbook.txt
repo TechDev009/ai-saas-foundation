@@ -1,0 +1,5 @@
+Acme handbook
+
+The document retention period is 90 days after workspace deletion. Owners may request earlier deletion through the workspace administrator.
+
+Support hours are Monday through Friday, 09:00 to 17:00 UTC.
