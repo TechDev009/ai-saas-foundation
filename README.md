@@ -34,8 +34,7 @@ The process is one deployable application. Provider, object-storage, rate-limit/
 Requires Python 3.12+ (3.13 recommended) and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-cd apps/05-ai-saas-foundation
-uv sync
+uv sync --locked
 cp .env.example .env
 uv run uvicorn knowledge_api.main:app --app-dir src --reload
 ```
@@ -65,8 +64,7 @@ uv lock --check
 
 ## Local end-to-end flow
 
-Local development authentication is an API key, not a password system. Create a user, then send the returned `user.id` as `X-Dev-User-Id` with the dev bearer token.
-
+Local development authentication is an API key, not a password system. The end-to-end snippet uses `curl` and `jq`; create a user, then send the returned `user.id` as `X-Dev-User-Id` with the dev bearer token.
 ```bash
 USER=$(curl -s -X POST http://127.0.0.1:8000/v1/auth/dev/users \
   -H 'Content-Type: application/json' \
@@ -84,7 +82,7 @@ curl -s -X POST "http://127.0.0.1:8000/v1/workspaces/$WS/answers" "${AUTH[@]}" \
   -H 'Content-Type: application/json' -d '{"question":"What is the retention period?"}'
 ```
 
-Upload processing is inline by default so the flow is deterministic. `POST .../documents/{id}/process` is available for a worker or a retry. Answers cite only chunks returned from the same workspace query and abstain when evidence is missing.
+Upload processing is inline by default so the flow is deterministic. `POST .../documents/{id}/process` is available for a worker or a retry. Answers cite only chunks returned from the same workspace query and abstain when evidence is missing. The current repository ships the inline queue as the supported local path; the Redis queue adapter is an extension point and must be implemented and deployed with an idempotent worker before selecting it in production.
 
 ## API contract
 
@@ -101,7 +99,8 @@ All protected workspace resources require a verified identity **and** membership
 | GET/DELETE | `/v1/workspaces/{workspace_id}` | metadata/soft-delete (owner) |
 | GET/POST | `/v1/workspaces/{workspace_id}/members` | membership management |
 | POST/GET | `/v1/workspaces/{workspace_id}/documents` | upload/list metadata |
-| GET/POST/DELETE | `/v1/workspaces/{workspace_id}/documents/{document_id}` | status/process/soft-delete |
+| GET/DELETE | `/v1/workspaces/{workspace_id}/documents/{document_id}` | status/soft-delete |
+| POST | `/v1/workspaces/{workspace_id}/documents/{document_id}/process` | process/retry |
 | POST | `/v1/workspaces/{workspace_id}/search` | workspace retrieval with citations |
 | POST | `/v1/workspaces/{workspace_id}/answers` | evidence-grounded answer/abstention |
 | POST/GET | `/v1/workspaces/{workspace_id}/conversations` | conversation ownership |
@@ -137,8 +136,18 @@ Start with 99.9% monthly availability for live API requests, p95 metadata/search
 
 ## Deployment
 
-See `docs/DEPLOYMENT.md` for PostgreSQL/pgvector, S3-compatible storage, Redis, queue workers, secrets, backups, monitoring, migrations, and rollback. `docker-compose.yml` starts the local API, Postgres with pgvector, Redis, and the API; offline tests do not require those services.
+See `docs/DEPLOYMENT.md` for PostgreSQL/pgvector, S3-compatible storage, Redis, queue workers, secrets, backups, monitoring, migrations, and rollback. To exercise the local Postgres/pgvector and Redis stack:
+```bash
+docker compose up --build
+```
 
 ## License
 
 MIT; see `LICENSE`.
+
+## Public release / status
+
+- **Local quickstart:** Run `uv sync --locked`, copy `.env.example`, and start Uvicorn with the commands in [Quick start](#quick-start); the default path uses local SQLite/filesystem storage and deterministic providers.
+- **CI/tests:** GitHub Actions runs pytest with coverage, Ruff lint and formatting checks, Pyright, and `uv lock --check`; the offline suite is described in [Evaluation and testing](#evaluation-and-testing).
+- **Limitations:** Local SQLite/filesystem mode is for development and tests, not multi-replica production; provider retention, malware scanning, and operational controls remain deployment responsibilities. See [SECURITY.md](SECURITY.md) and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- **Production:** Real production deployment requires operator-managed credentials, external services, security controls, and cloud/deployment infrastructure; this repository does not provide a hosted service.

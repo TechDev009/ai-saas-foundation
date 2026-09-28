@@ -2,7 +2,12 @@
 
 ## Reporting
 
-Please do not disclose a vulnerability in a public issue. Send a minimal reproduction, affected version/commit, impact, and suggested mitigation to the maintainers through the private security channel configured by the deploying organization. Do not include customer documents, credentials, or tokens. We aim to acknowledge reports within five business days.
+Please do not disclose a vulnerability in a public issue. Once this repository is
+published, use its GitHub **Security** tab and **Report a vulnerability** form. If
+private reporting is not enabled yet, contact the repository maintainer through
+their GitHub profile before sharing details. Include a minimal reproduction,
+affected version, impact, and suggested mitigation. Do not include customer
+documents, credentials, or tokens.
 
 ## Trust boundaries
 
